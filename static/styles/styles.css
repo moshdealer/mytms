@@ -7,15 +7,15 @@ body {
 }
 ::-webkit-scrollbar {
   width: 10px;
-  background-color: #ddeeff;
+  background-color: #8EE4AF;
 }
 ::-webkit-scrollbar-thumb {
   border-radius: 10px;
-  background-color: #0099ff;
+  background-color: #379683;
 }
 ::-webkit-scrollbar-track {
   border-radius: 10px;
-  background-color: #ddeeff;
+  background-color: #8EE4AF;
 }
 .header {
   position: absolute;
@@ -261,7 +261,9 @@ body {
   align-items: center;
   min-height: 100%;
   height: 100%;
-  width: 17%;
+  width: 17vw;
+  max-height: 100vh;
+  position: fixed;
   border-right: 1px solid rgba(0, 0, 0, .4);
 
 }
@@ -304,7 +306,10 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  width: 83%;
+  width: 83vw;
+  max-width: 83vw;
+  position: relative;
+  left: 15vw;
 }
 
 .buttonsection{
@@ -337,6 +342,8 @@ body {
   display: flex;
   padding-top: 50px;
   width: 100%;
+  height: 100%;
+  flex-wrap: wrap;
 }
 
 .projectcard{
@@ -359,6 +366,7 @@ body {
 .projectdescritpion{
   font-size: 14px;
   margin: 20px 30px 30px 30px;
+  min-height: 100px;
 }
 
 .projectbut{
@@ -366,6 +374,73 @@ body {
   align-self: center;
   justify-self: center;
 }
+
+dialog {
+	padding: 1rem 3rem;
+	background: white;
+	max-width: 400px;
+	padding-top: 2rem;
+	border-radius: 20px;
+	border: 0;
+	box-shadow: 0 5px 30px 0 rgb(0 0 0 / 10%);
+	animation: fadeIn 1s ease both;
+	&::backdrop {
+		animation: fadeIn 1s ease both;
+		background: rgb(255 255 255 / 40%);
+		z-index: 2;
+		backdrop-filter: blur(20px);
+	}
+	.x {
+		filter: grayscale(1);
+		border: none;
+		background: none;
+		position: absolute;
+		top: 15px;
+		right: 10px;
+		transition: ease filter, transform 0.3s;
+		cursor: pointer;
+		transform-origin: center;
+		&:hover {
+			filter: grayscale(0);
+		}
+	}
+	h2 {
+    text-align: center;
+  }
+  
+  .projectform{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .descriptioninput{
+    resize: none;
+    margin-bottom: 0.5em;
+  }
+  
+  #rb{
+    border-color: #fff;
+  }
+  #rb:hover {
+    color: #5CDB95;
+    box-shadow: inset 0 0 0 2px #5CDB95;
+  }
+
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+
+
+
 /*.avatar {
   position: relative;
   width: 150px;

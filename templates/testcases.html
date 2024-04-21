@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/styles/styles.css" />
+    <link rel="icon" href="static/mytmslogo.svg" type="image/svg+xml" />
+    <title>Проекты</title>
+  </head>
+  <body>
+    <div class="maincontainer">
+      <div class="sidebar">
+        <span class="logo"
+          ><a href="/projects"><img src="/static/logo.svg" class="logoim" /></a
+        ></span>
+        <div class="linkblock">
+          <a href="/profile" class="sidelink">Мой профиль</a>
+          <a href="/projects" class="sidelink">Мои проекты</a>
+          <a href="/settings" class="sidelink">Настройки</a>
+        </div>
+        <a href="/settings" class="sidelink" id="exitlink">Выход</a>
+      </div>
+      <div class="mainproject">
+        <div class="buttonsection">
+          <a onclick="window.dialog.showModal();" class="rectbutt">Создать</a>
+        </div>
+        <div class="projectcontainer">
+          <div class="projectcard">
+            <div class="projectname">Госуслуги</div>
+            <div class="projectdescritpion">
+              совокупность сервисов, которые государство предоставляет своим
+              гражданам для решения каких-либо проблем или вопросов
+            </div>
+            <div class="projectbut"><a class="rectbutt">Открыть</a></div>
+          </div>
+          <div class="projectcard">
+            <div class="projectname"> {{name .}}</div>
+            <div class="projectdescritpion">
+              {{discription .}}
+            </div>
+            <div class="projectbut"><a class="rectbutt">Открыть</a></div>
+          </div>
+        </div>
+       
+          <dialog id="dialog">
+            <h2>Создание проекта</h2>
+            <form action="createproject" method="POST" class="projectform">
+              <input
+                class="txtinput"
+                type="text"
+                name="name"
+                placeholder="Название проекта"
+              />
+              <textarea
+                class="descriptioninput"
+                name="description"
+                cols="28"
+                rows="5"
+                placeholder="Описание проекта"
+              ></textarea>
+              <div class="buttoncont">
+                <button class="rectbutt" id="rb" name="but" value="Войти">
+                  Создать
+                </button>
+              </div>
+            </form>
+            <button
+              onclick="window.dialog.close();"
+              aria-label="close"
+              class="x"
+            >
+              ❌
+            </button>
+          </dialog>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

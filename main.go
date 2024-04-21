@@ -3,7 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
+	"text/template"
 
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
@@ -177,6 +179,91 @@ func formHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func formCreateHandler(w http.ResponseWriter, r *http.Request) {
+	// Проверяем метод запроса - только POST-запросы обрабатываются
+	if r.Method != http.MethodPost {
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Получаем данные из формы
+	name := r.FormValue("name")
+	description := r.FormValue("description")
+
+	fmt.Println(name, description)
+	// Открываем соединение с базой данных.
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	// Проверяем соединение с базой данных.
+	err = db.Ping()
+	if err != nil {
+		log.Fatal("Could not ping database:", err)
+	}
+
+	insertQuery := "INSERT INTO projects (name, description) VALUES ($1, $2)"
+	_, err = db.Exec(insertQuery, name, description)
+	if err != nil {
+		fmt.Println("Ошибка выполнения POST-запроса:", err)
+		return
+	}
+
+	fmt.Println("POST-запрос выполнен успешно.")
+	http.Redirect(w, r, "/projects", http.StatusSeeOther)
+
+}
+
+func getProjects(w http.ResponseWriter, r *http.Request) {
+
+	type Project struct {
+		Name        string
+		Descritpion string
+	}
+
+	// Открываем соединение с базой данных.
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	// Проверяем соединение с базой данных.
+	err = db.Ping()
+	if err != nil {
+		log.Fatal("Could not ping database:", err)
+	}
+
+	// Выполняем SQL-запрос.
+	rows, err := db.Query("SELECT name, description FROM projects")
+	if err != nil {
+		http.Error(w, "Ошибка выполнения запроса", http.StatusInternalServerError)
+		return
+	}
+	var projects []Project
+	for rows.Next() {
+		var project Project
+		if err := rows.Scan(&project.Name, &project.Descritpion); err != nil {
+			http.Error(w, "Ошибка сканирования строк", http.StatusInternalServerError)
+			return
+		}
+		projects = append(projects, project)
+	}
+
+	tmpl, err := template.ParseFiles("templates/projects.html")
+	if err != nil {
+		http.Error(w, "Ошибка загрузки HTML-шаблона", http.StatusInternalServerError)
+		return
+	}
+
+	if err := tmpl.Execute(w, projects); err != nil {
+		http.Error(w, "Ошибка выполнения шаблона", http.StatusInternalServerError)
+		return
+	}
+
+}
 func main() {
 	// Устанавливаем обработчик для маршрута /restricted, который требует аутентификации.
 	http.HandleFunc("/", restrictSlash)
@@ -203,15 +290,14 @@ func main() {
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		http.ServeFile(w, r, "login.html")
+		http.ServeFile(w, r, "templates/login.html")
 	})
 
-	http.HandleFunc("/projects", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
-		http.ServeFile(w, r, "projects.html")
-	})
+	http.HandleFunc("/projects", getProjects)
 
 	http.HandleFunc("/check", formHandler)
+
+	http.HandleFunc("/createproject", formCreateHandler)
 
 	// Запускаем веб-сервер на порту 8080.
 	fmt.Println("Server is running on http://localhost:8080")
