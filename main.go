@@ -15,7 +15,6 @@ import (
 const connStr = "user=postgres dbname=mytms password=password host=localhost sslmode=disable"
 const sessionPass = "password"
 
-// Обработчик, который будет доступен только после аутентификации.
 func restrictSlash(w http.ResponseWriter, r *http.Request) {
 	var store = sessions.NewCookieStore([]byte(sessionPass))
 	session, err := store.Get(r, "session-name")
@@ -30,61 +29,6 @@ func restrictSlash(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 	}
-}
-
-// User структура представляет собой модель пользователя.
-type User struct {
-	Username string
-	Password []byte
-}
-
-// временная "База данных" пользователей.
-var users = map[string]User{
-	"user1": {Username: "user1", Password: hashPassword("password1")},
-	"user2": {Username: "user2", Password: hashPassword("password2")},
-}
-
-// Функция для хэширования пароля.
-func hashPassword(password string) []byte {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		panic(err)
-	}
-	return hash
-}
-
-// Функция для проверки пароля пользователя.
-func verifyPassword(user User, password string) bool {
-	err := bcrypt.CompareHashAndPassword(user.Password, []byte(password))
-	return err == nil
-}
-
-// Обработчик, который требует аутентификации.
-func requireAuth(handler http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		username, password, ok := r.BasicAuth()
-		if !ok || !authenticate(username, password) {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Unauthorized\n"))
-			return
-		}
-		handler(w, r)
-	}
-}
-
-// Обработчик, который будет доступен только после аутентификации.
-func restrictedHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the restricted area, %s!\n", r.RemoteAddr)
-}
-
-// Функция для проверки аутентификации.
-func authenticate(username, password string) bool {
-	user, found := users[username]
-	if !found {
-		return false
-	}
-	return verifyPassword(user, password)
 }
 
 func formHandler(w http.ResponseWriter, r *http.Request) {
@@ -221,6 +165,7 @@ func getProjects(w http.ResponseWriter, r *http.Request) {
 	type Project struct {
 		Name        string
 		Descritpion string
+		ID          int
 	}
 
 	// Открываем соединение с базой данных.
@@ -237,7 +182,7 @@ func getProjects(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Выполняем SQL-запрос.
-	rows, err := db.Query("SELECT name, description FROM projects")
+	rows, err := db.Query("SELECT name, description, id FROM projects")
 	if err != nil {
 		http.Error(w, "Ошибка выполнения запроса", http.StatusInternalServerError)
 		return
@@ -245,7 +190,7 @@ func getProjects(w http.ResponseWriter, r *http.Request) {
 	var projects []Project
 	for rows.Next() {
 		var project Project
-		if err := rows.Scan(&project.Name, &project.Descritpion); err != nil {
+		if err := rows.Scan(&project.Name, &project.Descritpion, &project.ID); err != nil {
 			http.Error(w, "Ошибка сканирования строк", http.StatusInternalServerError)
 			return
 		}
@@ -264,6 +209,61 @@ func getProjects(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func getCases(w http.ResponseWriter, r *http.Request) {
+
+	type Case struct {
+		Name        string
+		Descritpion string
+		ID          int
+		Status      int
+		Tp          int
+	}
+
+	// Получение значения параметра "id" из URL
+	idproj := r.URL.Query().Get("id")
+
+	// Открываем соединение с базой данных.
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	// Проверяем соединение с базой данных.
+	err = db.Ping()
+	if err != nil {
+		log.Fatal("Could not ping database:", err)
+	}
+
+	// Выполняем SQL-запрос.
+	rows, err := db.Query("SELECT name, description, id, status, type FROM testcases WHERE project = $1", idproj)
+	if err != nil {
+		http.Error(w, "Ошибка выполнения запроса", http.StatusInternalServerError)
+		return
+	}
+	var cases []Case
+	for rows.Next() {
+		var cs Case
+		if err := rows.Scan(&cs.Name, &cs.Descritpion, &cs.ID, &cs.Status, &cs.Tp); err != nil {
+			http.Error(w, "Ошибка сканирования строк", http.StatusInternalServerError)
+			return
+		}
+		cases = append(cases, cs)
+	}
+
+	tmpl, err := template.ParseFiles("templates/testcases.html")
+	if err != nil {
+		http.Error(w, "Ошибка загрузки HTML-шаблона", http.StatusInternalServerError)
+		return
+	}
+
+	if err := tmpl.Execute(w, cases); err != nil {
+		http.Error(w, "Ошибка выполнения шаблона", http.StatusInternalServerError)
+		return
+	}
+}
+
 func main() {
 	// Устанавливаем обработчик для маршрута /restricted, который требует аутентификации.
 	http.HandleFunc("/", restrictSlash)
@@ -294,6 +294,8 @@ func main() {
 	})
 
 	http.HandleFunc("/projects", getProjects)
+
+	http.HandleFunc("/testcases/", getCases)
 
 	http.HandleFunc("/check", formHandler)
 

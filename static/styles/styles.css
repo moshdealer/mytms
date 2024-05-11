@@ -293,7 +293,19 @@ body {
   
 }
 
+.tablelink{
+  text-decoration: none;
+  color: #000000;
+  margin-bottom: 20px;
+  -webkit-transition: all 500ms ease;
+          transition: all 500ms ease; /* Время изменения цвета */
+}
+
 .sidelink:hover{
+  color: #5CDB95; /* Меняем цвет ссылки */
+}
+
+.tablelink:hover{
   color: #5CDB95; /* Меняем цвет ссылки */
 }
 
@@ -438,64 +450,67 @@ dialog {
 	}
 }
 
-
-
-
-/*.avatar {
-  position: relative;
-  width: 150px;
-  margin-top: 20%;
-}
-.nickname {
-  font-size: 24px;
-}
-.headCent {
+.testlist {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  padding-top: 5em;
 }
-a {
-  margin: 0px 15px 0px 15px;
-  text-decoration: none;
+
+table {
+  width: 70vw;
+  border-collapse: collapse;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  
+}
+
+th {
+  padding: 15px;
+  background-color: rgba(255,255,255,0.2);
+  color: #fff;
+}
+
+td {
   color: #000000;
-  font-size: 125%;
+  padding: 15px;
 }
-a:hover {
-  text-decoration: underline;
+
+th {
+  text-align: center;
 }
-#burger {
-  display: none;
-}
-@media (max-width: 800px) {
-  #mainlogform {
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    overflow: auto;
-  }
-  .left {
-    min-width: 100%;
-    border-right: 0px;
-    border-bottom: 2px solid #d9d9d9;
-  }
-  .right {
-    min-width: 100%;
-    min-height: 10%;
+
+thead {
+  th {
+    background-color: #5CDB95;
   }
 }
-@media (max-width: 1060px) {
-  .newsform {
-    flex-direction: column;
+
+tbody {
+  tr {
+    &:hover {
+      background-color: rgba(255,255,255,0.3);
+    }
+    
   }
-  #send {
-    margin-top: 10px;
-    margin: 10px 0px 10px 0px;
+  td {
+    position: relative;
+    text-align: center;
+    &:hover {
+      &:before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -9999px;
+        bottom: -9999px;
+        background-color: rgba(255,255,255,0.2);
+        z-index: -1;
+      }
+    }
   }
 }
-@media (max-width: 520px) {
-  #mainheader {
-    display: none;
-  }
-  #burger {
-    display: inline;
-  }
+
+.idstr {
+  max-width: 20px;
 }

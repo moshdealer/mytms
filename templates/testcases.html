@@ -25,22 +25,34 @@
         <div class="buttonsection">
           <a onclick="window.dialog.showModal();" class="rectbutt">Создать</a>
         </div>
-        <div class="projectcontainer">
-          <div class="projectcard">
-            <div class="projectname">Госуслуги</div>
-            <div class="projectdescritpion">
-              совокупность сервисов, которые государство предоставляет своим
-              гражданам для решения каких-либо проблем или вопросов
-            </div>
-            <div class="projectbut"><a class="rectbutt">Открыть</a></div>
-          </div>
-          <div class="projectcard">
-            <div class="projectname"> {{name .}}</div>
-            <div class="projectdescritpion">
-              {{discription .}}
-            </div>
-            <div class="projectbut"><a class="rectbutt">Открыть</a></div>
-          </div>
+        <div class="testlist">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Название</th>
+                  <th>Вид</th>
+                  <th>Статус</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {{range .}}
+                <tr>
+                  <td><a class="tablelink" href="/case/?id={{.ID}}">{{.ID}}<a></td>
+                  <td><a class="tablelink" href="/case/?id={{.ID}}">{{.Name}}</a></td>
+                  {{if eq .Tp 0 }}<td>Тест-кейс</td>{{end}}
+                  {{if eq .Tp 1 }}<td>Чек-лист</td>{{end}}
+                  {{if eq .Status 0 }}<td>Ожидает проверки</td>{{end}}
+                  {{if eq .Status 1 }}<td>Проверено</td>{{end}}
+                  {{if eq .Status 2 }}<td>Не пройден</td>{{end}}
+                  <td><a class="rectbutt" href="/case/?id={{.ID}}">Открыть</a></td>
+                </tr>
+                {{else}}
+                <td colspan="5">Данных нет!</td>
+                {{end}}
+              </tbody>
+            </table>
         </div>
        
           <dialog id="dialog">
