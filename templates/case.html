@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/static/styles/styles.css" />
     <link rel="icon" href="/static/mytmslogo.svg" type="image/svg+xml" />
-    <title>Проверки</title>
+    <title>Сценарий</title>
   </head>
   <body>
     <div class="maincontainer">
@@ -26,76 +26,43 @@
           {{if .IsAdmin}}
           <a onclick="window.dialog1.showModal();" class="rectbuttred">Удалить</a>
           {{else}}
-            {{if eq .Createdby .Id }}
+            {{if eq .Createdby .Iduser }}
             <a onclick="window.dialog1.showModal();" class="rectbuttred">Удалить</a>
             {{end}}
           {{end}}
           <a onclick="window.dialog.showModal();" class="rectbutt">Создать</a>
         </div>
-        <div class="testlist">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Название</th>
-                  <th>Вид</th>
-                  <th>Статус</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {{range .CasePg}}
-                <tr>
-                  <td><a class="tablelink" href="/case/?id={{.ID}}">{{.ID}}<a></td>
-                  <td><a class="tablelink" href="/case/?id={{.ID}}">{{.Name}}</a></td>
-                  {{if eq .Tp 0 }}<td>Тест-кейс</td>{{end}}
-                  {{if eq .Tp 1 }}<td>Чек-лист</td>{{end}}
-                  {{if eq .Status 0 }}<td>Ожидает проверки</td>{{end}}
-                  {{if eq .Status 1 }}<td>Проверено</td>{{end}}
-                  {{if eq .Status 2 }}<td>Есть ошибки</td>{{end}}
-                  <td><a class="rectbutt" href="/case/?id={{.ID}}">Открыть</a></td>
-                </tr>
-                {{else}}
-                <td colspan="5">Данных нет!</td>
-                {{end}}
-              </tbody>
-            </table>
+        <div class="casedisc">
+            {{if .Name}}
+            <div class = "namecase">{{.Name}}</div>
+            {{if eq .Status 0 }}<div class="caseparam">Статус: Ожидает проверки</div>{{end}}
+            {{if eq .Status 1 }}<div class="caseparam">Статус: Проверено</div>{{end}}
+            {{if eq .Status 2 }}<div class="caseparam">Статус: Есть ошибки</div>{{end}}
+            {{if eq .Tp 0 }}<div class="caseparam">Тип: Тест-кейс</div>{{end}}
+            {{if eq .Tp 1 }}<div class="caseparam">Тип: Чек-лист</div>{{end}}
+            <div class="caseparam">Шаги воспроизведения: </div>
+            <div class = "discase">{{.Descritpion}}</div>
+            {{else}}
+            <div class="caseparam">Тестовый сценарий не существует</div>
+            {{end}}
         </div>
        
           <dialog id="dialog">
-            <h2>Создание cценария проверки</h2>
-            <form action="createcase" method="POST" class="projectform">
+            <h2>Создание проекта</h2>
+            <form action="createproject" method="POST" class="projectform">
               <input
-               style="width: 100%;"
                 class="txtinput"
                 type="text"
                 name="name"
-                placeholder="Название"
-                
+                placeholder="Название проекта"
               />
               <textarea
                 class="descriptioninput"
                 name="description"
-                cols="50"
-                rows="10"
-                placeholder="Шаги воспроизведения"
+                cols="28"
+                rows="5"
+                placeholder="Описание проекта"
               ></textarea>
-              <div class="selectcont">
-              <div class="selecttxt">Тип: </div>
-              <select name="type" class="selectform">
-                 <option value="0">Тест-кейс</option>
-                 <option value="1">Чек-лист</option>
-              </select>
-            </div>
-              <div class="selectcont">
-              <div class="selecttxt">Статус: </div>
-              <select name="status" class="selectform">
-                <option value="0">Ожидает проверки</option>
-                <option value="1">Проверено</option>
-                <option value="1">Есть ошибки</option>
-              </select>
-              </div>
-             <input type="hidden" name="parent" value="{{.Idproj}}">
               <div class="buttoncont">
                 <button class="rectbutt" id="rb" name="but" value="Войти">
                   Создать
@@ -111,7 +78,7 @@
             </button>
           </dialog>
           <dialog id="dialog1">
-            <h2>Удалить этот проект?</h2>
+            <h2>Удалить этот сценарий?</h2>
               <div class="buttoncont">
                 <button class="rectbutt" id="rb" name="but" value="yes"
                   onclick="window.dialog1.close();"
@@ -122,8 +89,9 @@
                 <button class="rectbuttred" id="rb" name="but">
                   Да
                 </button>
-                <input type="hidden" name="idsubj" value="{{.Idproj}}">
-                <input type="hidden" name="table" value="projects">
+                <input type="hidden" name="idsubj" value="{{.ID}}">
+                <input type="hidden" name="table" value="testcases">
+                <input type="hidden" name="parent" value="{{.Project}}">
                 </form>
               </div>
           </dialog>

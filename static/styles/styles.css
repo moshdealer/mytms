@@ -340,12 +340,31 @@ body {
   background-color: #5CDB95;
 }
 
+.rectbuttred{
+  text-decoration: none;
+  color: #ffffff;
+  padding: 5px 25px;
+  border-radius: 6px;
+  background-color: #E10600;
+  margin-right: 5px;
+}
+
 .rectbutt:hover {
   background: rgba(0, 0, 0, 0);
   color: #5CDB95;
   box-shadow: inset 0 0 0 2px #5CDB95;
 }
 .rectbutt:active {
+  transform: translateY(2px);
+  /* Moving button 4px to y-axis */
+}
+
+.rectbuttred:hover {
+  background: rgba(0, 0, 0, 0);
+  color: #E10600;
+  box-shadow: inset 0 0 0 2px #E10600;
+}
+.rectbuttred:active {
   transform: translateY(2px);
   /* Moving button 4px to y-axis */
 }
@@ -386,7 +405,9 @@ body {
   align-self: center;
   justify-self: center;
 }
-
+#dialog1{
+  padding: 1rem 1rem;
+}
 dialog {
 	padding: 1rem 3rem;
 	background: white;
@@ -432,13 +453,10 @@ dialog {
   }
   
   #rb{
-    border-color: #fff;
+    margin: 0px 10px 0px 10px;
+    border: none;
+    outline:none
   }
-  #rb:hover {
-    color: #5CDB95;
-    box-shadow: inset 0 0 0 2px #5CDB95;
-  }
-
 }
 
 @keyframes fadeIn {
@@ -513,4 +531,44 @@ tbody {
 
 .idstr {
   max-width: 20px;
+}
+
+.casedisc{
+  display: flex;
+  flex-direction: column;
+  max-width: 80% ;
+  min-width: 80%;
+  margin-top: 15px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.namecase{
+  font-size: 24px;
+  align-items: flex-start;
+}
+
+.discase{
+  margin-top: 0.5em;
+  font-size: 16px;
+}
+
+.caseparam{
+  margin-top: 1em;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.selectform {
+  margin-bottom: 0.5em;
+}
+
+.selectcont{
+  display: flex;
+  align-self: flex-start;
+}
+
+.selecttxt{
+  margin-right: 2%;
 }
