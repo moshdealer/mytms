@@ -15,9 +15,11 @@
           ><a href="/projects"><img src="/static/logo.svg" class="logoim" /></a
         ></span>
         <div class="linkblock">
-          <a href="/profile" class="sidelink">Мой профиль</a>
+          <a href="/profile/?id={{.ID}}" class="sidelink">Мой профиль</a>
           <a href="/projects" class="sidelink">Мои проекты</a>
+          {{if .IsAdmin}}
           <a href="/settings" class="sidelink">Настройки</a>
+          {{end}}
         </div>
         <a href="/logout" class="sidelink" id="exitlink">Выход</a>
       </div>
@@ -26,7 +28,7 @@
           <a onclick="window.dialog.showModal();" class="rectbutt">Создать</a>
         </div>
         <div class="projectcontainer">
-          {{range .}}
+          {{range .Projects}}
           <div class="projectcard">
             <div class="projectname"> {{.Name}}</div>
             <div class="projectdescritpion">

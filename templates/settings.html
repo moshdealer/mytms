@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/styles/styles.css" />
+    <link rel="icon" href="/static/mytmslogo.svg" type="image/svg+xml" />
+    <title>Настройки</title>
+  </head>
+  <body>
+    <div class="maincontainer">
+      <div class="sidebar">
+        <span class="logo"
+          ><a href="/projects"><img src="/static/logo.svg" class="logoim" /></a
+        ></span>
+        <div class="linkblock">
+          <a href="/profile/?id={{.IdUser}}" class="sidelink">Мой профиль</a>
+          <a href="/projects" class="sidelink">Мои проекты</a>
+          <a href="/settings" class="sidelink">Настройки</a>
+        </div>
+        <a href="/logout" class="sidelink" id="exitlink">Выход</a>
+      </div>
+      <div class="mainproject">
+        <div class="buttonsection">
+          <a onclick="window.dialog.showModal();" class="rectbutt">Создать</a>
+        </div>
+        <div class="testlist">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Имя</th>
+                  <th>Логин</th>
+                  <th>Роль</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {{range .Users}}
+                <tr>
+                  <td><a class="tablelink" href="/profile/?id={{.ID}}">{{.ID}}<a></td>
+                  <td><a class="tablelink" href="/profile/?id={{.ID}}">{{.Name}}</a></td>
+                  <td><a class="tablelink" href="/profile/?id={{.ID}}">{{.Login}}</a></td>
+                  {{if .Admin}}<td>Администратор</td>
+                  {{else}}<td>Пользователь</td>
+                  {{end}}
+                  <td><a class="rectbutt" href="/profile/?id={{.ID}}">Открыть</a></td>
+                </tr>
+                {{else}}
+                <td colspan="5">Данных нет!</td>
+                {{end}}
+              </tbody>
+            </table>
+        </div>
+       
+          <dialog id="dialog">
+            <h2>Создание пользователя</h2>
+            <form onsubmit="return validateMyForm();" action="createuser" method="POST" class="projectform">
+              <input
+               style="width: 100%;"
+                class="txtinput"
+                type="text"
+                name="name"
+                placeholder="Имя" 
+              />
+              <input
+              style="width: 100%;"
+               class="txtinput"
+               type="text"
+               name="login"
+               placeholder="Логин"
+             />
+             <input
+             style="width: 100%;"
+              class="txtinput"
+              type="password"
+              name="password"
+              id = "password"
+              placeholder="Пароль"
+            />
+            <input
+             style="width: 100%;"
+              class="txtinput"
+              type="password"
+              id = "confirmPassword"
+              placeholder="Повторите пароль"
+            />
+              <div class="selectcont">
+              <div class="selecttxt">Роль: </div>
+              <select name="IsAdmin" class="selectform">
+                 <option value="false">Пользователь</option>
+                 <option value="true">Администратор</option>
+              </select>
+            </div>
+              <div class="buttoncont">
+                <button class="rectbutt" id="rb" name="but" value="Войти">
+                  Создать
+                </button>
+              </div>
+            </form>
+            <button
+              onclick="window.dialog.close();"
+              aria-label="close"
+              class="x"
+            >
+              ❌
+            </button>
+          </dialog>
+        </div>
+      </div>
+    </div>
+    <script>
+        function validateMyForm() {
+            var passValue = document.getElementById("password").value
+            var confpassValue = document.getElementById("confirmPassword").value
+            if(passValue === "") {
+            window.alert("Пароль не может быть пустым!")
+            return false;
+            }
+            if(passValue !== confpassValue) {
+            window.alert("Пароли не совпадают!")
+            return false
+            }
+            return true
+        }
+    </script> 
+  </body>
+</html>

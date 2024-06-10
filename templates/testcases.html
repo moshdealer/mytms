@@ -15,9 +15,11 @@
           ><a href="/projects"><img src="/static/logo.svg" class="logoim" /></a
         ></span>
         <div class="linkblock">
-          <a href="/profile" class="sidelink">Мой профиль</a>
+          <a href="/profile/?id={{.Id}}" class="sidelink">Мой профиль</a>
           <a href="/projects" class="sidelink">Мои проекты</a>
+          {{if .IsAdmin}}
           <a href="/settings" class="sidelink">Настройки</a>
+          {{end}}
         </div>
         <a href="/logout" class="sidelink" id="exitlink">Выход</a>
       </div>
@@ -25,12 +27,21 @@
         <div class="buttonsection">
           {{if .IsAdmin}}
           <a onclick="window.dialog1.showModal();" class="rectbuttred">Удалить</a>
+          <a onclick="window.dialog2.showModal();" class="rectbutt">Изменить</a>
           {{else}}
             {{if eq .Createdby .Id }}
             <a onclick="window.dialog1.showModal();" class="rectbuttred">Удалить</a>
+            <a onclick="window.dialog2.showModal();" class="rectbutt">Изменить</a>
             {{end}}
           {{end}}
           <a onclick="window.dialog.showModal();" class="rectbutt">Создать</a>
+        </div>
+        <div class="datasection">
+          <div style="font-weight: bold; font-size: 26px; margin-bottom: 0.3em;">{{.ProjName}}</div>
+          <div class="dataline">Функциональные тесты: Успешные: {{.FnArrSt.Success}}%, Проваленные: {{.FnArrSt.Failed}}%, Ждут проверки {{.FnArrSt.Waiting}}%</div>
+          <div class="dataline">Нефункциональные тесты: Успешные: {{.NfnArrSt.Success}}%, Проваленные: {{.NfnArrSt.Failed}}%, Ждут проверки {{.NfnArrSt.Waiting}}%</div>
+          <div class="dataline">Тесты интерфейса: Успешные: {{.IntArrSt.Success}}%, Проваленные: {{.IntArrSt.Failed}}%, Ждут проверки {{.IntArrSt.Waiting}}%</div>
+          <div class="dataline">Регрессионные тесты: Успешные: {{.RegrArrSt.Success}}%, Проваленные: {{.RegrArrSt.Failed}}%, Ждут проверки {{.RegrArrSt.Waiting}}%</div>
         </div>
         <div class="testlist">
             <table>
@@ -40,6 +51,7 @@
                   <th>Название</th>
                   <th>Вид</th>
                   <th>Статус</th>
+                  <th>Категория</th>
                   <th></th>
                 </tr>
               </thead>
@@ -53,6 +65,10 @@
                   {{if eq .Status 0 }}<td>Ожидает проверки</td>{{end}}
                   {{if eq .Status 1 }}<td>Проверено</td>{{end}}
                   {{if eq .Status 2 }}<td>Есть ошибки</td>{{end}}
+                  {{if eq .Category 0 }}<td>Функциональное тестирование</td>{{end}}
+                  {{if eq .Category 1 }}<td>Нефункциональное тестирование</td>{{end}}
+                  {{if eq .Category 2 }}<td>Тестирование интерфейса</td>{{end}}
+                  {{if eq .Category 3 }}<td>Регрессионное тестирование</td>{{end}}
                   <td><a class="rectbutt" href="/case/?id={{.ID}}">Открыть</a></td>
                 </tr>
                 {{else}}
@@ -92,9 +108,18 @@
               <select name="status" class="selectform">
                 <option value="0">Ожидает проверки</option>
                 <option value="1">Проверено</option>
-                <option value="1">Есть ошибки</option>
+                <option value="2">Есть ошибки</option>
               </select>
               </div>
+              <div class="selectcont">
+                <div class="selecttxt">Категория:</div>
+                <select name="category" class="selectform">
+                  <option value="0">Функциональное тестирование</option>
+                  <option value="1">Нефункциональное тестирование</option>
+                  <option value="2">Тестирование интерфейса</option>
+                  <option value="3">Регрессионное тестирование</option>
+                </select>
+                </div>
              <input type="hidden" name="parent" value="{{.Idproj}}">
               <div class="buttoncont">
                 <button class="rectbutt" id="rb" name="but" value="Войти">
@@ -126,6 +151,39 @@
                 <input type="hidden" name="table" value="projects">
                 </form>
               </div>
+          </dialog>
+          <dialog id="dialog2">
+            <h2>Редактирование проекта</h2>
+            <form action="editsubject" method="POST" class="projectform">
+              <input
+              class="txtinput"
+              type="text"
+              name="name"
+              placeholder="Название проекта"
+              value="{{.ProjName}}"
+            />
+            <textarea
+              class="descriptioninput"
+              name="description"
+              cols="28"
+              rows="5"
+              placeholder="Описание проекта"
+            >{{.ProjDesc}}</textarea>
+            <input type="hidden" name="idsubj" value="{{.Idproj}}">
+                <input type="hidden" name="table" value="projects">
+              <div class="buttoncont">
+                <button class="rectbutt" id="rb" name="but" value="Войти">
+                  Изменить
+                </button>
+              </div>
+            </form>
+            <button
+              onclick="window.dialog2.close();"
+              aria-label="close"
+              class="x"
+            >
+              ❌
+            </button>
           </dialog>
         </div>
       </div>

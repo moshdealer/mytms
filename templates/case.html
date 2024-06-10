@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/static/styles/styles.css" />
     <link rel="icon" href="/static/mytmslogo.svg" type="image/svg+xml" />
-    <title>Сценарий</title>
+    <title>Сценарий {{.Name}}</title>
   </head>
   <body>
     <div class="maincontainer">
@@ -15,9 +15,11 @@
           ><a href="/projects"><img src="/static/logo.svg" class="logoim" /></a
         ></span>
         <div class="linkblock">
-          <a href="/profile" class="sidelink">Мой профиль</a>
+          <a href="/profile/?id={{.Iduser}}" class="sidelink">Мой профиль</a>
           <a href="/projects" class="sidelink">Мои проекты</a>
+          {{if .IsAdmin}}
           <a href="/settings" class="sidelink">Настройки</a>
+          {{end}}
         </div>
         <a href="/logout" class="sidelink" id="exitlink">Выход</a>
       </div>
@@ -25,47 +27,80 @@
         <div class="buttonsection">
           {{if .IsAdmin}}
           <a onclick="window.dialog1.showModal();" class="rectbuttred">Удалить</a>
+          <a onclick="window.dialog.showModal();" class="rectbutt">Изменить</a>
           {{else}}
             {{if eq .Createdby .Iduser }}
             <a onclick="window.dialog1.showModal();" class="rectbuttred">Удалить</a>
+            <a onclick="window.dialog.showModal();" class="rectbutt">Изменить</a>
             {{end}}
           {{end}}
-          <a onclick="window.dialog.showModal();" class="rectbutt">Создать</a>
         </div>
         <div class="casedisc">
             {{if .Name}}
             <div class = "namecase">{{.Name}}</div>
+            {{if eq .Tp 0 }}<div class="caseparam">Тип: Тест-кейс</div>{{end}}
+            {{if eq .Tp 1 }}<div class="caseparam">Тип: Чек-лист</div>{{end}}
             {{if eq .Status 0 }}<div class="caseparam">Статус: Ожидает проверки</div>{{end}}
             {{if eq .Status 1 }}<div class="caseparam">Статус: Проверено</div>{{end}}
             {{if eq .Status 2 }}<div class="caseparam">Статус: Есть ошибки</div>{{end}}
-            {{if eq .Tp 0 }}<div class="caseparam">Тип: Тест-кейс</div>{{end}}
-            {{if eq .Tp 1 }}<div class="caseparam">Тип: Чек-лист</div>{{end}}
+            {{if eq .Category 0 }}<div class="caseparam">Категория: Функциональное тестирование</div>{{end}}
+            {{if eq .Category 1 }}<div class="caseparam">Категория: Нефункциональное тестирование</div>{{end}}
+            {{if eq .Category 2 }}<div class="caseparam">Категория: Тестирование интерфейса</div>{{end}}
+            {{if eq .Category 3 }}<div class="caseparam">Категория: Регрессионное тестирование</div>{{end}}
             <div class="caseparam">Шаги воспроизведения: </div>
-            <div class = "discase">{{.Descritpion}}</div>
+            <div class = "discase">{{.Descritpionbr}}</div>
             {{else}}
             <div class="caseparam">Тестовый сценарий не существует</div>
             {{end}}
         </div>
        
           <dialog id="dialog">
-            <h2>Создание проекта</h2>
-            <form action="createproject" method="POST" class="projectform">
+            <h2>Редактирование сценария</h2>
+            <form action="editsubject" method="POST" class="projectform">
               <input
+              style="width: 100%;"
                 class="txtinput"
                 type="text"
                 name="name"
                 placeholder="Название проекта"
+                value = "{{.Name}}"
               />
               <textarea
                 class="descriptioninput"
                 name="description"
-                cols="28"
-                rows="5"
+                cols="50"
+                rows="10"
                 placeholder="Описание проекта"
-              ></textarea>
+              >{{.Descritpion}}</textarea>
+              <div class="selectcont">
+                <div class="selecttxt">Тип: </div>
+                <select name="type" class="selectform">
+                   <option value="0" {{if eq .Tp 0 }}selected{{end}}>Тест-кейс</option>
+                   <option value="1" {{if eq .Tp 1 }}selected{{end}}>Чек-лист</option>
+                </select>
+              </div>
+                <div class="selectcont">
+                <div class="selecttxt">Статус: </div>
+                <select name="status" class="selectform">
+                  <option value="0" {{if eq .Status 0 }}selected{{end}}>Ожидает проверки</option>
+                  <option value="1" {{if eq .Status 1 }}selected{{end}}>Проверено</option>
+                  <option value="2" {{if eq .Status 2 }}selected{{end}} >Есть ошибки</option>
+                </select>
+                </div>
+                <div class="selectcont">
+                  <div class="selecttxt">Категория: </div>
+                  <select name="category" class="selectform">
+                    <option value="0" {{if eq .Category 0 }}selected{{end}}>Функциональное тестирование</option>
+                    <option value="1" {{if eq .Category 1 }}selected{{end}}>Нефункциональное тестирование</option>
+                    <option value="2" {{if eq .Category 2 }}selected{{end}}>Тестирование интерфейса</option>
+                    <option value="3" {{if eq .Category 3 }}selected{{end}}>Регрессионное тестирование</option>
+                  </select>
+                  </div>
+                <input type="hidden" name="idsubj" value="{{.ID}}">
+                <input type="hidden" name="table" value="testcases">
               <div class="buttoncont">
                 <button class="rectbutt" id="rb" name="but" value="Войти">
-                  Создать
+                  Изменить
                 </button>
               </div>
             </form>

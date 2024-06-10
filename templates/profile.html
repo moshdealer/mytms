@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/styles/styles.css" />
+    <link rel="icon" href="/static/mytmslogo.svg" type="image/svg+xml" />
+    <title>Профиль</title>
+  </head>
+  <body>
+    <div class="maincontainer">
+      <div class="sidebar">
+        <span class="logo"
+          ><a href="/projects"><img src="/static/logo.svg" class="logoim" /></a
+        ></span>
+        <div class="linkblock">
+          <a href="/profile/?id={{.ID}}" class="sidelink">Мой профиль</a>
+          <a href="/projects" class="sidelink">Мои проекты</a>
+          {{if .IsAdminsess}}
+          <a href="/settings" class="sidelink">Настройки</a>
+          {{end}}
+        </div>
+        <a href="/logout" class="sidelink" id="exitlink">Выход</a>
+      </div>
+      <div class="mainproject">
+        <div class="buttonsection">
+          {{if .IsAdminsess}}
+          <a onclick="window.dialog1.showModal();" class="rectbuttred">Удалить</a>
+          {{end}}
+          {{if .IsAdminsess}}
+          <a onclick="window.dialog.showModal();" class="rectbutt">Изменить</a>
+          {{else}}
+            {{if eq .ID .Iduser }}
+            <a onclick="window.dialog.showModal();" class="rectbutt">Изменить</a>
+            {{end}}
+          {{end}}
+        </div>
+        {{if .PassErr}}<div style="color: red;">Был введен неправильный пароль!</div>{{end}}
+        <div class="userdisc">
+            
+            {{if .Login}}
+            <img src="/static/usercircle.svg" style="max-width: 25%; margin-left: 2em;">
+            <div class ="infocont">
+            <div class = "userinf">{{.Name}}</div>
+            <div class = "userinf">@{{.Login}}</div>
+            <div class = "userinf">{{if .IsAdmin}}Администратор{{else}}Пользователь{{end}}</div>
+            </div>
+            {{else}}
+            <div class="caseparam">Пользователя не существует!</div>
+            {{end}}
+        </div>
+       
+          <dialog id="dialog">
+            <h2>Редактирование пользователя</h2>
+            <form onsubmit="return validateMyForm();" action="editsubject" method="POST" class="projectform">
+              <input
+              style="width: 50%;"
+                class="txtinput"
+                type="text"
+                name="name"
+                placeholder="Имя"
+                value = "{{.Name}}"
+              />
+              <input
+              style="width: 100%;"
+              class="txtinput"
+              type="password"
+              name="oldpassword"
+              id = "oldpassword"
+              placeholder="Старый пароль"
+              />
+              <input
+              style="width: 100%;"
+              class="txtinput"
+              type="password"
+              name="newpassword"
+              id = "newpassword"
+              placeholder="Новый пароль"
+              />
+              <input
+              style="width: 100%;"
+              class="txtinput"
+              type="password"
+              id = "confirmPassword"
+              placeholder="Повторите пароль"
+              />
+              {{if .IsAdminsess}}
+              <div class="selectcont" style="align-self: center;">
+              <div class="selecttxt">Статус: </div>
+              <select name = "isadmin"class="selectform">
+                <option value="0">Пользователь</option>
+                <option value="1" {{if .IsAdmin}}selected{{end}}>Администратор</option>
+              </select>
+              </div>
+              {{end}}
+                <input type="hidden" name="idsubj" value="{{.Iduser}}">
+                <input type="hidden" name="table" value="users">
+              <div class="buttoncont">
+                <button class="rectbutt" id="rb" name="but" value="Войти">
+                  Изменить
+                </button>
+              </div>
+            </form>
+            <button
+              onclick="window.dialog.close();"
+              aria-label="close"
+              class="x"
+            >
+              ❌
+            </button>
+          </dialog>
+          <dialog id="dialog1">
+            <h2>Удалить пользователя?</h2>
+              <div class="buttoncont">
+                <button class="rectbutt" id="rb" name="but" value="yes"
+                  onclick="window.dialog1.close();"
+                  aria-label="close">
+                  Нет
+                </button>
+                <form action="deletesubject"  method="POST" class="projectform">
+                <button class="rectbuttred" id="rb" name="but">
+                  Да
+                </button>
+                <input type="hidden" name="idsubj" value="{{.Iduser}}">
+                <input type="hidden" name="table" value="users">
+                </form>
+              </div>
+          </dialog>
+        </div>
+      </div>
+    </div>
+    <script>
+        function validateMyForm() {
+            var passValue = document.getElementById("newpassword").value
+            var confpassValue = document.getElementById("confirmPassword").value
+            var oldpassword = document.getElementById("oldpassword").value
+            if (passValue === "" && confpassValue === "" && oldpassword === ""){
+                return true
+            }
+            if(passValue !== confpassValue) {
+            window.alert("Пароли не совпадают!")
+            return false
+            } else if (oldpassword === "") {
+                window.alert("Старый пароль не введен!")
+                return false 
+            }
+            return true
+        }
+    </script> 
+  </body>
+</html>
