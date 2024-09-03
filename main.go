@@ -9,12 +9,18 @@ import (
 	"strings"
 	"text/template"
 
+	"mytms/config"
+
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
-const connStr = "user=postgres dbname=mytms password=password host=localhost sslmode=disable"
+var cfg = config.LoadConfig()
+
+var connStr = config.MakeBDPath(*cfg)
+
+//const connStr = "user=postgres dbname=mytms password=password host=localhost sslmode=disable"
 
 var sessionStore = sessions.NewCookieStore([]byte("sessionpassword"))
 
@@ -41,7 +47,7 @@ func restrictSlash(w http.ResponseWriter, r *http.Request) {
 
 func formAuth(w http.ResponseWriter, r *http.Request) {
 	// Проверяем метод запроса - только POST-запросы обрабатываются
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodGet {
 		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
 	}
@@ -99,7 +105,7 @@ func formAuth(w http.ResponseWriter, r *http.Request) {
 		session.Values["id"] = id
 		session.Values["isAdmin"] = isAdmin
 		session.Save(r, w)
-		fmt.Print(w, "Сессия установлена")
+		fmt.Println(w, "Сессия установлена")
 
 		http.Redirect(w, r, "/projects", http.StatusSeeOther)
 	}
@@ -600,7 +606,7 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 0 and status = 1 and project = $1", idproj).Scan(&fnArr[0])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 0 and status = 2 and project = $1", idproj).Scan(&fnArr[1])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 0 and status = 0 and project = $1", idproj).Scan(&fnArr[2])
-		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 0").Scan(&sumFn)
+		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 0 and project = $1", idproj).Scan(&sumFn)
 		for i := 0; i < 3; i++ {
 			fnArr[i] = fnArr[i] / sumFn * 100
 			fnArrSt[i] = fmt.Sprintf("%.0f", fnArr[i])
@@ -614,7 +620,7 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 1 and status = 1 and project = $1", idproj).Scan(&nfnArr[0])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 1 and status = 2 and project = $1", idproj).Scan(&nfnArr[1])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 1 and status = 0 and project = $1", idproj).Scan(&nfnArr[2])
-		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 1").Scan(&sumNfn)
+		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 1 and project = $1", idproj).Scan(&sumNfn)
 		for i := 0; i < 3; i++ {
 			nfnArr[i] = nfnArr[i] / sumNfn * 100
 			nfnArrSt[i] = fmt.Sprintf("%.0f", nfnArr[i])
@@ -628,7 +634,7 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 2 and status = 1 and project = $1", idproj).Scan(&intArr[0])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 2 and status = 2 and project = $1", idproj).Scan(&intArr[1])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 2 and status = 0 and project = $1", idproj).Scan(&intArr[2])
-		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 2").Scan(&sumInt)
+		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 2 and project = $1", idproj).Scan(&sumInt)
 		for i := 0; i < 3; i++ {
 			intArr[i] = intArr[i] / sumInt * 100
 			intArrSt[i] = fmt.Sprintf("%.0f", intArr[i])
@@ -642,7 +648,7 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 3 and status = 1 and project = $1", idproj).Scan(&regrArr[0])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 3 and status = 2 and project = $1", idproj).Scan(&regrArr[1])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 3 and status = 0 and project = $1", idproj).Scan(&regrArr[2])
-		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 3").Scan(&sumRegr)
+		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 3 and project = $1", idproj).Scan(&sumRegr)
 		for i := 0; i < 3; i++ {
 			regrArr[i] = regrArr[i] / sumRegr * 100
 			regrArrSt[i] = fmt.Sprintf("%.0f", regrArr[i])
@@ -896,7 +902,6 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Удаление сессии путем установки отрицательного времени жизни
 	session.Options.MaxAge = -1
 	session.Save(r, w)
-
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
@@ -927,7 +932,7 @@ func main() {
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		session, _ := sessionStore.Get(r, "session-name")
 		idsess := session.Values["id"]
-		if idsess != 0 {
+		if idsess != nil {
 			w.Header().Set("Content-Type", "text/html")
 			http.Redirect(w, r, "/projects", http.StatusSeeOther)
 		} else {
