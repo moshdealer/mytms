@@ -9,7 +9,8 @@ import (
 	"strings"
 	"text/template"
 
-	"mytms/config"
+	"mytms/internal/config"
+	"mytms/internal/rest"
 
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
@@ -19,8 +20,6 @@ import (
 var cfg = config.LoadConfig()
 
 var connStr = config.MakeBDPath(*cfg)
-
-//const connStr = "user=postgres dbname=mytms password=password host=localhost sslmode=disable"
 
 var sessionStore = sessions.NewCookieStore([]byte("sessionpassword"))
 
@@ -973,8 +972,16 @@ func main() {
 
 	http.HandleFunc("/logout", logoutHandler)
 
-	// Запускаем веб-сервер на порту 8080.
-	fmt.Println("Server is running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	//REST
+	http.HandleFunc("/REST/projects/", rest.GetProjectsREST)
 
+	http.HandleFunc("/REST/testcases/", rest.GetTestCasesREST)
+
+	http.HandleFunc("/REST/pushproject/", rest.PushProject)
+
+	http.HandleFunc("/REST/pushcase/", rest.PushCase)
+
+	// Запускаем веб-сервер на порту из конфига.
+	fmt.Println("Server is running on", cfg.HTTPServer.Address)
+	http.ListenAndServe(cfg.HTTPServer.Address, nil)
 }
