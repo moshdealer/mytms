@@ -55,7 +55,6 @@ func formAuth(w http.ResponseWriter, r *http.Request) {
 	log := r.FormValue("login")
 	pass := r.FormValue("pass")
 
-	fmt.Println(log, pass)
 	// Открываем соединение с базой данных.
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -124,7 +123,6 @@ func formCreateHandler(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	description := r.FormValue("description")
 
-	fmt.Println(name, description)
 	// Открываем соединение с базой данных.
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -167,7 +165,6 @@ func caseCreateHandler(w http.ResponseWriter, r *http.Request) {
 	parent := r.FormValue("parent")
 	category := r.FormValue("category")
 
-	fmt.Println(name, description)
 	// Открываем соединение с базой данных.
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -232,7 +229,6 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 			log.Fatal("Could not ping database:", err)
 		}
 
-		fmt.Print(isAdminform)
 		passhash, _ := HashPassword(password)
 		insertQuery := "INSERT INTO users (name, login, isadmin, passhash) VALUES ($1, $2, $3, $4)"
 		_, err = db.Exec(insertQuery, name, login, isAdminformbool, passhash)
@@ -265,7 +261,6 @@ func deleteSubject(w http.ResponseWriter, r *http.Request) {
 		table := r.FormValue("table")
 		parent := r.FormValue("parent")
 
-		fmt.Println(idsubj, table)
 		// Открываем соединение с базой данных.
 		db, err := sql.Open("postgres", connStr)
 		if err != nil {
@@ -280,7 +275,6 @@ func deleteSubject(w http.ResponseWriter, r *http.Request) {
 		}
 
 		deleteQuery := fmt.Sprintf("DELETE FROM %s WHERE id = $1", table)
-		fmt.Print(deleteQuery)
 		result, err := db.Exec(deleteQuery, idsubj)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -331,7 +325,6 @@ func editSubject(w http.ResponseWriter, r *http.Request) {
 		rolest := r.FormValue("isadmin")
 		role, _ := strconv.ParseBool(rolest)
 
-		fmt.Println(idsubj, table)
 		// Открываем соединение с базой данных.
 		db, err := sql.Open("postgres", connStr)
 		if err != nil {
@@ -370,12 +363,10 @@ func editSubject(w http.ResponseWriter, r *http.Request) {
 				}
 				err = bcrypt.CompareHashAndPassword([]byte(passhash), []byte(oldpass))
 				if err != nil && isAdminSess != true {
-					fmt.Println("Пароль не совпал!")
 					Path := fmt.Sprintf("/profile/?id=%s&passerr=1", idsubj)
 					http.Redirect(w, r, Path, http.StatusSeeOther)
 					http.Redirect(w, r, "/login", http.StatusSeeOther)
 				} else {
-					fmt.Println("Пароль совпал")
 					newpasshash, _ := HashPassword(newpass)
 					editQuery = fmt.Sprintf("UPDATE %s SET name = '%s', isadmin = '%t', passhash = '%s' WHERE id = $1", table, name, role, newpasshash)
 				}
