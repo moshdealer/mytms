@@ -23,17 +23,16 @@ var connStr = config.MakeBDPath(*cfg)
 
 var sessionStore = sessions.NewCookieStore([]byte("sessionpassword"))
 
-// HashPassword хэширует переданный пароль
+// Хэширование пароля
 func HashPassword(password string) (string, error) {
-	// Используем bcrypt для хэширования пароля
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
 	}
-	// Возвращаем хэш в виде строки
 	return string(hash), nil
 }
 
+// Обработчик обращения в корень сайта
 func restrictSlash(w http.ResponseWriter, r *http.Request) {
 	session, _ := sessionStore.Get(r, "session-name")
 	id := session.Values["id"]
@@ -45,43 +44,41 @@ func restrictSlash(w http.ResponseWriter, r *http.Request) {
 }
 
 func formAuth(w http.ResponseWriter, r *http.Request) {
-	// Проверяем метод запроса - только POST-запросы обрабатываются
+	// Проверка на POST-запрос
 	if r.Method != http.MethodGet {
 		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
 	}
 
 	// Получаем данные из формы
-	log := r.FormValue("login")
+	login := r.FormValue("login")
 	pass := r.FormValue("pass")
 
-	// Открываем соединение с базой данных.
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		//log.Fatal(err)
+		log.Fatal(err)
 	}
 	defer db.Close()
 
-	// Проверяем соединение с базой данных.
 	err = db.Ping()
 	if err != nil {
-		//log.Fatal("Could not ping database:", err)
+		log.Fatal("Could not ping database:", err)
 	}
 
-	// Выполняем SQL-запрос.
-	rows, err := db.Query("SELECT login, passhash, id, isadmin FROM users WHERE login = $1", log)
+	//Делаем запрос
+	rows, err := db.Query("SELECT login, passhash, id, isadmin FROM users WHERE login = $1", login)
 	if err != nil {
-		//log.Fatal(err)
+		log.Fatal(err)
 	}
 	defer rows.Close()
-	var login string
+	var loginUs string
 	var passhash string
 	var id int
 	var isAdmin bool
 
-	// Читаем результаты запроса.
+	// Читаем результаты
 	for rows.Next() {
-		err := rows.Scan(&login, &passhash, &id, &isAdmin)
+		err := rows.Scan(&loginUs, &passhash, &id, &isAdmin)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -111,7 +108,7 @@ func formAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 func formCreateHandler(w http.ResponseWriter, r *http.Request) {
-	// Проверяем метод запроса - только POST-запросы обрабатываются
+	// Проверка на POST-запрос
 	if r.Method != http.MethodPost {
 		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
@@ -123,14 +120,12 @@ func formCreateHandler(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	description := r.FormValue("description")
 
-	// Открываем соединение с базой данных.
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	// Проверяем соединение с базой данных.
 	err = db.Ping()
 	if err != nil {
 		log.Fatal("Could not ping database:", err)
@@ -149,7 +144,7 @@ func formCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func caseCreateHandler(w http.ResponseWriter, r *http.Request) {
-	// Проверяем метод запроса - только POST-запросы обрабатываются
+	//Проверка на POST-запрос
 	if r.Method != http.MethodPost {
 		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
@@ -157,6 +152,7 @@ func caseCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	session, _ := sessionStore.Get(r, "session-name")
 	id := session.Values["id"]
+
 	// Получаем данные из формы
 	name := r.FormValue("name")
 	description := r.FormValue("description")
@@ -165,14 +161,12 @@ func caseCreateHandler(w http.ResponseWriter, r *http.Request) {
 	parent := r.FormValue("parent")
 	category := r.FormValue("category")
 
-	// Открываем соединение с базой данных.
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	// Проверяем соединение с базой данных.
 	err = db.Ping()
 	if err != nil {
 		log.Fatal("Could not ping database:", err)
@@ -193,7 +187,7 @@ func caseCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createUser(w http.ResponseWriter, r *http.Request) {
-	// Проверяем метод запроса - только POST-запросы обрабатываются
+	// Проверка на POST-запрос
 	if r.Method != http.MethodPost {
 		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
@@ -216,14 +210,13 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			isAdminformbool = false
 		}
-		// Открываем соединение с базой данных.
+
 		db, err := sql.Open("postgres", connStr)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer db.Close()
 
-		// Проверяем соединение с базой данных.
 		err = db.Ping()
 		if err != nil {
 			log.Fatal("Could not ping database:", err)
@@ -246,7 +239,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteSubject(w http.ResponseWriter, r *http.Request) {
-
+	//Проверка на POST-запрос
 	if r.Method != http.MethodPost {
 		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
@@ -261,14 +254,12 @@ func deleteSubject(w http.ResponseWriter, r *http.Request) {
 		table := r.FormValue("table")
 		parent := r.FormValue("parent")
 
-		// Открываем соединение с базой данных.
 		db, err := sql.Open("postgres", connStr)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer db.Close()
 
-		// Проверяем соединение с базой данных.
 		err = db.Ping()
 		if err != nil {
 			log.Fatal("Could not ping database:", err)
@@ -325,14 +316,12 @@ func editSubject(w http.ResponseWriter, r *http.Request) {
 		rolest := r.FormValue("isadmin")
 		role, _ := strconv.ParseBool(rolest)
 
-		// Открываем соединение с базой данных.
 		db, err := sql.Open("postgres", connStr)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer db.Close()
 
-		// Проверяем соединение с базой данных.
 		err = db.Ping()
 		if err != nil {
 			log.Fatal("Could not ping database:", err)
@@ -388,14 +377,6 @@ func editSubject(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("POST-запрос выполнен успешно.")
 
 		var testCasePath string
-		/*if table == "projects" {
-			testCasePath = fmt.Sprintf("/testcases/?id=%s", idsubj)
-			http.Redirect(w, r, testCasePath, http.StatusSeeOther)
-		} else {
-			testCasePath = fmt.Sprintf("/case/?id=%s", idsubj)
-			http.Redirect(w, r, testCasePath, http.StatusSeeOther)
-		}*/
-
 		switch table {
 		case "projects":
 			testCasePath = fmt.Sprintf("/testcases/?id=%s", idsubj)
@@ -427,27 +408,24 @@ func getProjects(w http.ResponseWriter, r *http.Request) {
 		ID       int
 	}
 
-	// Получаем сессию
 	session, _ := sessionStore.Get(r, "session-name")
 
 	// Получаем значение из сессии
 	id, _ := session.Values["id"].(int)
 	isAdmin, _ := session.Values["isAdmin"].(bool)
 	if id != 0 {
-		// Открываем соединение с базой данных.
+
 		db, err := sql.Open("postgres", connStr)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer db.Close()
 
-		// Проверяем соединение с базой данных.
 		err = db.Ping()
 		if err != nil {
 			log.Fatal("Could not ping database:", err)
 		}
 
-		// Выполняем SQL-запрос.
 		rows, err := db.Query("SELECT name, description, id FROM projects ORDER BY id")
 		if err != nil {
 			http.Error(w, "Ошибка выполнения запроса", http.StatusInternalServerError)
@@ -514,7 +492,6 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 		CasePg    []Case
 	}
 
-	// Получаем сессию
 	session, _ := sessionStore.Get(r, "session-name")
 
 	// Получаем значение из сессии
@@ -522,23 +499,20 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 	isAdmin, _ := session.Values["isAdmin"].(bool)
 
 	if id != 0 {
-		// Получение значения параметра "id" из URL
+
 		idproj := r.URL.Query().Get("id")
 
-		// Открываем соединение с базой данных.
 		db, err := sql.Open("postgres", connStr)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer db.Close()
 
-		// Проверяем соединение с базой данных.
 		err = db.Ping()
 		if err != nil {
 			log.Fatal("Could not ping database:", err)
 		}
 
-		// Выполняем SQL-запрос.
 		rows, err := db.Query("SELECT name, description, id, status, type, category FROM testcases WHERE project = $1", idproj)
 		if err != nil {
 			http.Error(w, "Ошибка выполнения запроса", http.StatusInternalServerError)
@@ -559,7 +533,7 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 		var createdby int
 		var projname string
 		var projdesc string
-		// Выполняем SQL-запрос.
+
 		rows, err = db.Query("SELECT name, description, createdby FROM projects WHERE id = $1", idproj)
 		if err != nil {
 			http.Error(w, "Ошибка выполнения запроса", http.StatusInternalServerError)
@@ -689,30 +663,25 @@ func getCase(w http.ResponseWriter, r *http.Request) {
 		Category      int
 	}
 
-	// Получаем сессию
 	session, _ := sessionStore.Get(r, "session-name")
 
-	// Получаем значение из сессии
 	id, _ := session.Values["id"].(int)
 	isAdmin, _ := session.Values["isAdmin"].(bool)
 	if id != 0 {
 
-		// Получение значения параметра "id" из URL
 		idcase := r.URL.Query().Get("id")
-		// Открываем соединение с базой данных.
+
 		db, err := sql.Open("postgres", connStr)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer db.Close()
 
-		// Проверяем соединение с базой данных.
 		err = db.Ping()
 		if err != nil {
 			log.Fatal("Could not ping database:", err)
 		}
 
-		// Выполняем SQL-запрос.
 		rows, err := db.Query("SELECT name, description, id, status, type, createdby, project, category FROM testcases WHERE id = $1", idcase)
 		if err != nil {
 			http.Error(w, "Ошибка выполнения запроса", http.StatusInternalServerError)
@@ -728,7 +697,6 @@ func getCase(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			cs.Descritpionbr = strings.Replace(cs.Descritpion, "\n", "<br>", -1)
-			//cs.Descritpion = strings.Replace(cs.Descritpion, "\n", "&#13;&#10", -1)
 		}
 
 		tmpl, err := template.ParseFiles("templates/case.html")
@@ -758,31 +726,26 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 		PassErr     bool
 	}
 
-	// Получаем сессию
 	session, _ := sessionStore.Get(r, "session-name")
 
-	// Получаем значение из сессии
 	id, _ := session.Values["id"].(int)
 	isAdmin, _ := session.Values["isAdmin"].(bool)
 	if id != 0 {
 
-		// Получение значения параметра "id" из URL
 		iduser := r.URL.Query().Get("id")
 		passErr := r.URL.Query().Get("passerr")
-		// Открываем соединение с базой данных.
+
 		db, err := sql.Open("postgres", connStr)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer db.Close()
 
-		// Проверяем соединение с базой данных.
 		err = db.Ping()
 		if err != nil {
 			log.Fatal("Could not ping database:", err)
 		}
 
-		// Выполняем SQL-запрос.
 		rows, err := db.Query("SELECT name, login, isadmin FROM users WHERE id = $1", iduser)
 		if err != nil {
 			http.Error(w, "Ошибка выполнения запроса", http.StatusInternalServerError)
@@ -829,29 +792,24 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 		IdUser int
 	}
 
-	// Получаем сессию
 	session, _ := sessionStore.Get(r, "session-name")
 
-	// Получаем значение из сессии
 	id, _ := session.Values["id"].(int)
 	isAdmin, _ := session.Values["isAdmin"].(bool)
 
 	if id != 0 && isAdmin {
 
-		// Открываем соединение с базой данных.
 		db, err := sql.Open("postgres", connStr)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer db.Close()
 
-		// Проверяем соединение с базой данных.
 		err = db.Ping()
 		if err != nil {
 			log.Fatal("Could not ping database:", err)
 		}
 
-		// Выполняем SQL-запрос.
 		rows, err := db.Query("SELECT name, login, id, isadmin FROM users")
 		if err != nil {
 			http.Error(w, "Ошибка выполнения запроса", http.StatusInternalServerError)
@@ -896,6 +854,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
 	// Устанавливаем обработчик для маршрута /restricted, который требует аутентификации.
 	http.HandleFunc("/", restrictSlash)
 
@@ -931,37 +890,37 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/projects", getProjects)
+	http.HandleFunc("/projects", getProjects) //Страница проектов
 
-	http.HandleFunc("/testcases/", getCases)
+	http.HandleFunc("/testcases/", getCases) //Страница тест-кейсов
 
-	http.HandleFunc("/case/", getCase)
+	http.HandleFunc("/case/", getCase) //Деталка тест-кейса
 
-	http.HandleFunc("/check", formAuth)
+	http.HandleFunc("/check", formAuth) //Метод проверки логина и пароля пользователя
 
-	http.HandleFunc("/createproject", formCreateHandler)
+	http.HandleFunc("/createproject", formCreateHandler) //Создание проекта
 
-	http.HandleFunc("/testcases/createcase", caseCreateHandler)
+	http.HandleFunc("/testcases/deletesubject", deleteSubject) // Удаление проекта
 
-	http.HandleFunc("/testcases/deletesubject", deleteSubject)
+	http.HandleFunc("/testcases/editsubject", editSubject) //Изменение проекта
 
-	http.HandleFunc("/case/deletesubject", deleteSubject)
+	http.HandleFunc("/testcases/createcase", caseCreateHandler) //Создание тест-кейса
 
-	http.HandleFunc("/case/editsubject", editSubject)
+	http.HandleFunc("/case/deletesubject", deleteSubject) // Удаление тест-кейса
 
-	http.HandleFunc("/testcases/editsubject", editSubject)
+	http.HandleFunc("/case/editsubject", editSubject) // Изменение тест-кейса
 
-	http.HandleFunc("/profile/", getProfile)
+	http.HandleFunc("/profile/", getProfile) // Деталка профиля
 
-	http.HandleFunc("/profile/editsubject", editSubject)
+	http.HandleFunc("/profile/deletesubject", deleteSubject) // Удаление профиля
 
-	http.HandleFunc("/profile/deletesubject", deleteSubject)
+	http.HandleFunc("/profile/editsubject", editSubject) // Изменение профиля
 
-	http.HandleFunc("/settings/", getUsers)
+	http.HandleFunc("/settings/", getUsers) // Страница с пользователями
 
-	http.HandleFunc("/settings/createuser", createUser)
+	http.HandleFunc("/settings/createuser", createUser) // Создание пользователя
 
-	http.HandleFunc("/logout", logoutHandler)
+	http.HandleFunc("/logout", logoutHandler) // Логаут
 
 	//REST
 	http.HandleFunc("/REST/projects/", rest.GetProjectsREST)
