@@ -62,7 +62,7 @@ func formAuth(w http.ResponseWriter, r *http.Request) {
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Could not ping database:", err)
+		log.Fatal("БД недоступна:", err)
 	}
 
 	//Делаем запрос
@@ -128,7 +128,7 @@ func formCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Could not ping database:", err)
+		log.Fatal("БД недоступна:", err)
 	}
 
 	insertQuery := "INSERT INTO projects (name, description, createdby) VALUES ($1, $2, $3)"
@@ -169,7 +169,7 @@ func caseCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Could not ping database:", err)
+		log.Fatal("БД недоступна:", err)
 	}
 
 	insertQuery := "INSERT INTO testcases (name, description, project, status, type, createdby, category) VALUES ($1, $2, $3, $4, $5, $6, $7)"
@@ -219,7 +219,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 
 		err = db.Ping()
 		if err != nil {
-			log.Fatal("Could not ping database:", err)
+			log.Fatal("БД недоступна:", err)
 		}
 
 		passhash, _ := HashPassword(password)
@@ -262,7 +262,7 @@ func deleteSubject(w http.ResponseWriter, r *http.Request) {
 
 		err = db.Ping()
 		if err != nil {
-			log.Fatal("Could not ping database:", err)
+			log.Fatal("БД недоступна:", err)
 		}
 
 		deleteQuery := fmt.Sprintf("DELETE FROM %s WHERE id = $1", table)
@@ -324,7 +324,7 @@ func editSubject(w http.ResponseWriter, r *http.Request) {
 
 		err = db.Ping()
 		if err != nil {
-			log.Fatal("Could not ping database:", err)
+			log.Fatal("БД недоступна:", err)
 		}
 
 		var editQuery string
@@ -423,7 +423,7 @@ func getProjects(w http.ResponseWriter, r *http.Request) {
 
 		err = db.Ping()
 		if err != nil {
-			log.Fatal("Could not ping database:", err)
+			log.Fatal("БД недоступна:", err)
 		}
 
 		rows, err := db.Query("SELECT name, description, id FROM projects ORDER BY id")
@@ -510,7 +510,7 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 
 		err = db.Ping()
 		if err != nil {
-			log.Fatal("Could not ping database:", err)
+			log.Fatal("БД недоступна:", err)
 		}
 
 		rows, err := db.Query("SELECT name, description, id, status, type, category FROM testcases WHERE project = $1", idproj)
@@ -571,9 +571,14 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 0 and status = 2 and project = $1", idproj).Scan(&fnArr[1])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 0 and status = 0 and project = $1", idproj).Scan(&fnArr[2])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 0 and project = $1", idproj).Scan(&sumFn)
+
 		for i := 0; i < 3; i++ {
-			fnArr[i] = fnArr[i] / sumFn * 100
-			fnArrSt[i] = fmt.Sprintf("%.0f", fnArr[i])
+			if fnArr[i] != 0 {
+				fnArr[i] = fnArr[i] / sumFn * 100
+				fnArrSt[i] = fmt.Sprintf("%.0f", fnArr[i])
+			} else {
+				fnArrSt[i] = "0"
+			}
 		}
 		fnArrStruct := CaseCount{
 			Success: fnArrSt[0],
@@ -586,8 +591,12 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 1 and status = 0 and project = $1", idproj).Scan(&nfnArr[2])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 1 and project = $1", idproj).Scan(&sumNfn)
 		for i := 0; i < 3; i++ {
-			nfnArr[i] = nfnArr[i] / sumNfn * 100
-			nfnArrSt[i] = fmt.Sprintf("%.0f", nfnArr[i])
+			if nfnArr[i] != 0 {
+				nfnArr[i] = nfnArr[i] / sumNfn * 100
+				nfnArrSt[i] = fmt.Sprintf("%.0f", nfnArr[i])
+			} else {
+				nfnArrSt[i] = "0"
+			}
 		}
 		nfnArrStruct := CaseCount{
 			Success: nfnArrSt[0],
@@ -600,8 +609,12 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 2 and status = 0 and project = $1", idproj).Scan(&intArr[2])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 2 and project = $1", idproj).Scan(&sumInt)
 		for i := 0; i < 3; i++ {
-			intArr[i] = intArr[i] / sumInt * 100
-			intArrSt[i] = fmt.Sprintf("%.0f", intArr[i])
+			if intArr[i] != 0 {
+				intArr[i] = intArr[i] / sumInt * 100
+				intArrSt[i] = fmt.Sprintf("%.0f", intArr[i])
+			} else {
+				intArrSt[i] = "0"
+			}
 		}
 		intArrStruct := CaseCount{
 			Success: intArrSt[0],
@@ -614,8 +627,12 @@ func getCases(w http.ResponseWriter, r *http.Request) {
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 3 and status = 0 and project = $1", idproj).Scan(&regrArr[2])
 		db.QueryRow("SELECT COUNT(*) FROM testcases WHERE category = 3 and project = $1", idproj).Scan(&sumRegr)
 		for i := 0; i < 3; i++ {
-			regrArr[i] = regrArr[i] / sumRegr * 100
-			regrArrSt[i] = fmt.Sprintf("%.0f", regrArr[i])
+			if regrArr[i] != 0 {
+				regrArr[i] = regrArr[i] / sumRegr * 100
+				regrArrSt[i] = fmt.Sprintf("%.0f", regrArr[i])
+			} else {
+				regrArrSt[i] = "0"
+			}
 
 		}
 		regrArrStruct := CaseCount{
@@ -679,7 +696,7 @@ func getCase(w http.ResponseWriter, r *http.Request) {
 
 		err = db.Ping()
 		if err != nil {
-			log.Fatal("Could not ping database:", err)
+			log.Fatal("БД недоступна:", err)
 		}
 
 		rows, err := db.Query("SELECT name, description, id, status, type, createdby, project, category FROM testcases WHERE id = $1", idcase)
@@ -743,7 +760,7 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 
 		err = db.Ping()
 		if err != nil {
-			log.Fatal("Could not ping database:", err)
+			log.Fatal("БД недоступна:", err)
 		}
 
 		rows, err := db.Query("SELECT name, login, isadmin FROM users WHERE id = $1", iduser)
@@ -807,7 +824,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 
 		err = db.Ping()
 		if err != nil {
-			log.Fatal("Could not ping database:", err)
+			log.Fatal("БД недоступна:", err)
 		}
 
 		rows, err := db.Query("SELECT name, login, id, isadmin FROM users")

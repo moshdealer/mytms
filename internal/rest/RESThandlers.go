@@ -39,17 +39,15 @@ func GetProjectsREST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Открываем соединение с базой данных.
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	// Проверяем соединение с базой данных.
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Could not ping database:", err)
+		log.Fatal("БД недоступна: ", err)
 	}
 
 	var rows *sql.Rows
@@ -70,7 +68,6 @@ func GetProjectsREST(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	//params := mux.Vars(r)
 	var projects []Project
 	for rows.Next() {
 		var project Project
@@ -93,17 +90,15 @@ func GetTestCasesREST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Открываем соединение с базой данных.
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	// Проверяем соединение с базой данных.
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Could not ping database:", err)
+		log.Fatal("БД недоступна:", err)
 	}
 
 	var rows *sql.Rows
@@ -145,17 +140,15 @@ func PushProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Открываем соединение с базой данных.
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	// Проверяем соединение с базой данных.
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Could not ping database:", err)
+		log.Fatal("БД недоступна:", err)
 	}
 
 	// Декодирование JSON-запроса в структуру
@@ -164,14 +157,12 @@ func PushProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Вставка записи в базу данных
 	err = db.QueryRow("INSERT INTO projects (name, description, createdby) VALUES ($1, $2, $3) RETURNING id", proj.Name, proj.Description, proj.Createdby).Scan(&proj.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Возвращаем результат
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(proj)
 }
@@ -184,17 +175,15 @@ func PushCase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Открываем соединение с базой данных.
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	// Проверяем соединение с базой данных.
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Could not ping database:", err)
+		log.Fatal("БД недоступна:", err)
 	}
 
 	// Декодирование JSON-запроса в структуру
@@ -203,14 +192,12 @@ func PushCase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Вставка записи в базу данных
 	err = db.QueryRow("INSERT INTO testcases (name, description, project, status, type, createdby, category) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", testcase.Name, testcase.Description, testcase.Project, testcase.Status, testcase.Type, testcase.Createdby, testcase.Category).Scan(&testcase.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Возвращаем результат
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(testcase)
 }
